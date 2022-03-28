@@ -1,0 +1,47 @@
+﻿<Page
+    x:Class="Minesweeper.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Minesweeper"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Height="500" Width="500">
+
+    <Page.Resources>
+        <Style TargetType="Border" x:Key="CellBorder">
+            <Setter Property="Width" Value="20" />
+            <Setter Property="Height" Value="20" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Background" Value="DarkGray" />
+            <Setter Property="CornerRadius" Value="3" />
+        </Style>
+        <Style TargetType="TextBlock" x:Key="CellText">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+        </Style>
+    </Page.Resources>
+
+    <Grid Padding="10" x:Name="grid1">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        <Grid x:Name="gameContext" Grid.Row="0"/>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
+            <TextBlock Text="Rows:" VerticalAlignment="Center"/>
+            <TextBox  Width="50" Margin="2, 0, 20, 0" Name="inputRows" Text="{Binding GridRows, Mode=TwoWay}"/>
+            <TextBlock Text="Columns:" VerticalAlignment="Center"/>
+            <TextBox  Width="50" Margin="2, 0, 20, 0" Name="inputCols" Text="{Binding GridColumns, Mode=TwoWay}"/>
+            <TextBlock Text="Mines:" VerticalAlignment="Center"/>
+            <TextBox  Width="50" Margin="2, 0, 20, 0" Name="inputMines" Text="{Binding NumberMines, Mode=TwoWay}"/>
+            <Button HorizontalAlignment="Center" Content="Refresh" x:Name="btnRefresh" Click="btnRefresh_Click"/>
+        </StackPanel>
+        
+
+
+
+    </Grid>
+</Page>
