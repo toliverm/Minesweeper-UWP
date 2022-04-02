@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using System.ComponentModel;
 
 namespace Minesweeper
 {
@@ -18,7 +19,7 @@ namespace Minesweeper
         public int GridRows { get; set; }
         public int GridColumns { get; set; }
         public int NumberMines { get; set; }
-        public string[,] BoardMembers { get; set; }
+        public BindingList<GameBoardRow> BoardMembers { get; set; }
 
         public GameViewModel()
         {
@@ -62,28 +63,16 @@ namespace Minesweeper
                 }
             }
 
-
-            public void AddCells(Grid grid, GameCellProfile[,] array)
+            public void AddCells(Grid grid, BindingList<GameBoardRow> gameBoard)
             {
-                for (int r = 0; r < array.GetLength(0); r++)
+                foreach (GameBoardRow row in gameBoard)
                 {
-                    for (int c = 0; c < array.GetLength(1); c++)
+                    foreach (GameCellProfile cell in row.GameCells)
                     {
-
-                        if (array[r, c] != null)
-                        {
-                            GameCell cell = new GameCell(r, c, array[r, c].Text, array[r, c].IsMine);
-                            cell.SetValue(Grid.RowProperty, r);
-                            cell.SetValue(Grid.ColumnProperty, c);
-                            grid.Children.Add(cell);
-                        }
-                        else
-                        {
-                            GameCell cell = new GameCell(r, c, "", false);
-                            cell.SetValue(Grid.RowProperty, r);
-                            cell.SetValue(Grid.ColumnProperty, c);
-                            grid.Children.Add(cell);
-                        }
+                        GameCell thisCell = new GameCell(cell.cellRow, cell.cellColumn, cell.Text, cell.IsMine);
+                        thisCell.SetValue(Grid.RowProperty, cell.cellRow);
+                        thisCell.SetValue(Grid.ColumnProperty, cell.cellColumn);
+                        grid.Children.Add(thisCell);
                     }
                 }
             }

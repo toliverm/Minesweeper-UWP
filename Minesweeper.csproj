@@ -120,6 +120,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Game.cs" />
+    <Compile Include="GameBoardRow.cs" />
     <Compile Include="GameCell.xaml.cs">
       <DependentUpon>GameCell.xaml</DependentUpon>
     </Compile>
