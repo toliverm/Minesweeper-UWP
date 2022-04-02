@@ -28,13 +28,14 @@ namespace Minesweeper
         {
             get { return $"{cellRow.ToString()}_{cellColumn.ToString()}"; }
         }
-        public GameCell(int row, int column)
+        public GameCell(int row, int column, string text, bool isMine)
         {
 
             this.InitializeComponent();
-            this.DataContext = ;
             this.cellRow = row;
             this.cellColumn = column;
+            this.CellContent = text;
+            this.IsMine = isMine;
 
         }
 

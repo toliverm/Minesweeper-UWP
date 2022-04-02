@@ -16,7 +16,7 @@ namespace Minesweeper
         public int GridRows { get; set; }
         public int GridColumns { get; set; }
         public int NumberMines { get; set; }
-        public GameCell[,] BoardMembers { get; set; }
+        public GameCellProfile[,] BoardMembers { get; set; }
 
         public Game()
         {
@@ -40,15 +40,15 @@ namespace Minesweeper
 
         public void InitializeGameBoard()
         {
-            BoardMembers = new GameCell[GridRows, GridColumns];
+            BoardMembers = new GameCellProfile[GridRows, GridColumns];
 
             for (int r = 0; r < BoardMembers.GetLength(0); r++)
             {
                 for (int c = 0; c < BoardMembers.GetLength(1); c++)
                 {
-                    BoardMembers[r, c] = new GameCell(r, c, "", false);
-                    BoardMembers[r, c].SetValue(Grid.RowProperty, r);
-                    BoardMembers[r, c].SetValue(Grid.ColumnProperty, c);
+                    BoardMembers[r, c] = new GameCellProfile(r, c, "", false);
+/*                    BoardMembers[r, c].SetValue(Grid.RowProperty, r);
+                    BoardMembers[r, c].SetValue(Grid.ColumnProperty, c);*/
                 }
             }
 
@@ -61,7 +61,7 @@ namespace Minesweeper
                 int c = rnd.Next(0, GridColumns);
 
 
-                BoardMembers[r, c].CellContent= "*";
+                BoardMembers[r, c].Text = "*";
                 BoardMembers[r, c].IsMine = true;
 
 
@@ -162,7 +162,7 @@ namespace Minesweeper
                         else
 
                         {
-                            BoardMembers[r, c].CellContent = BoardMembers[r, c].MineCount.ToString() ;
+                            BoardMembers[r, c].Text = BoardMembers[r, c].MineCount.ToString() ;
                         }
                     }
                 }

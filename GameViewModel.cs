@@ -30,8 +30,8 @@ namespace Minesweeper
         public void Draw(Game game, Grid grid)
         {
             PlayGrid playGrid = new PlayGrid(game.GridRows, game.GridColumns);
-            playGrid.playGrid.Children.Add(game.BoardMembers)
-/*            playGrid.AddCells(playGrid.playGrid, game.BoardMembers);*/
+            /*            playGrid.playGrid.Children.Add(game.BoardMembers)*/
+            playGrid.AddCells(playGrid.playGrid, game.BoardMembers);
             grid.Children.Clear();
             grid.Children.Add(playGrid.playGrid);
         }
