@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml.Controls;
+using System.ComponentModel;
 
 namespace Minesweeper
 {
     internal class Game
     {
-        private int defaultGridRows = 9;
-        private int defaultGridColumns = 9;
-        private int defaultNumberMines = 5;
+        private readonly int defaultGridRows = 9;
+        private readonly int defaultGridColumns = 9;
+        private readonly int defaultNumberMines = 5;
 
         public int GridRows { get; set; }
         public int GridColumns { get; set; }
         public int NumberMines { get; set; }
-        public GameCellProfile[,] BoardMembers { get; set; }
+        public BindingList<GameBoardRow> BoardMembers { get; set; }
 
         public Game()
         {
@@ -38,152 +38,36 @@ namespace Minesweeper
 
 
 
-        public void InitializeGameBoard()
+        // Returns list of int[2]{x,y} co-ordinates for each surrounding cell of position x,y that falls within the grid boundaries of xMax, yMax. Co-ordinates begin at 0,0.
+        internal List<int[]> getNearbyCoords(int x, int y, int xMax, int yMax)
         {
-            BoardMembers = new GameCellProfile[GridRows, GridColumns];
+            List<int[]> coords = new List<int[]>();
 
-            for (int r = 0; r < BoardMembers.GetLength(0); r++)
+            for (int i = x - 1; i <= x + 1; i++)
             {
-                for (int c = 0; c < BoardMembers.GetLength(1); c++)
+                for (int j = y - 1; j <= y + 1; j++)
                 {
-                    BoardMembers[r, c] = new GameCellProfile(r, c, "", false);
-/*                    BoardMembers[r, c].SetValue(Grid.RowProperty, r);
-                    BoardMembers[r, c].SetValue(Grid.ColumnProperty, c);*/
-                }
-            }
-
-
-
-                    for (int i = 0; i < NumberMines; i++)
-            {
-                Random rnd = new Random();
-                int r = rnd.Next(0, GridRows);
-                int c = rnd.Next(0, GridColumns);
-
-
-                BoardMembers[r, c].Text = "*";
-                BoardMembers[r, c].IsMine = true;
-
-
-
-
-            }
-
-            for (int r = 0; r < BoardMembers.GetLength(0); r++)
-            {
-                for (int c = 0; c < BoardMembers.GetLength(1); c++)
-                {
-
-                    if (BoardMembers[r, c].IsMine == true)
+                    if ((i >= 0 && i <= xMax) && (j >= 0 && j <= yMax) && !(i == x && j == y))
                     {
-                        continue;
-                    }
-                    else
-                    {
-
-                        try
-                        {
-                            if (BoardMembers[r + 1, c].IsMine == true)
-                            {
-                                BoardMembers[r, c].MineCount++;
-                            }
-                        }
-                        catch (Exception) { }
-
-
-                        try
-                        {
-                            if (BoardMembers[r + 1, c + 1].IsMine == true)
-                            {
-                                BoardMembers[r, c].MineCount++;
-                            }
-                        }
-                        catch (Exception) { }
-
-
-                        try
-                        {
-                            if (BoardMembers[r, c + 1].IsMine == true)
-                            {
-                                BoardMembers[r, c].MineCount++;
-                            }
-                        }
-                        catch (Exception) { }
-
-                        try
-                        {
-                            if (BoardMembers[r - 1, c + 1].IsMine == true)
-                            {
-                                BoardMembers[r, c].MineCount++;
-                            }
-                        }
-                        catch (Exception) { }
-
-                        try
-                        {
-                            if (BoardMembers[r - 1, c].IsMine == true)
-                            {
-                                BoardMembers[r, c].MineCount++;
-                            }
-                        }
-                        catch (Exception) { }
-
-                        try
-                        {
-                            if (BoardMembers[r - 1, c - 1].IsMine == true)
-                            {
-                                BoardMembers[r, c].MineCount++;
-                            }
-                        }
-                        catch (Exception) { }
-
-                        try
-                        {
-                            if (BoardMembers[r, c - 1].IsMine == true)
-                            {
-                                BoardMembers[r, c].MineCount++;
-                            }
-                        }
-                        catch (Exception) { }
-
-                        try
-                        {
-                            if (BoardMembers[r + 1, c - 1].IsMine == true)
-                            {
-                                BoardMembers[r, c].MineCount++;
-                            }
-                        }
-                        catch (Exception) { }
-
-                        if (BoardMembers[r, c].MineCount == 0)
-                        {
-                            continue;
-                        }
-                        else
-
-                        {
-                            BoardMembers[r, c].Text = BoardMembers[r, c].MineCount.ToString() ;
-                        }
+                        coords.Add(new int[] { i, j });
                     }
                 }
             }
+
+            return coords;
         }
 
-
-/*        public void InitializeGameBoard()
+        public void InitializeGameBoard()
         {
-            BoardMembers = new GameCellProfile[GridRows, GridColumns];
+            BoardMembers = new BindingList<GameBoardRow>();
 
-            for (int r = 0; r < BoardMembers.GetLength(0); r++)
+            for (int r = 0; r < GridRows; r++)
             {
-                for (int c = 0; c < BoardMembers.GetLength(1); c++)
-                {
-                    BoardMembers[r, c] = new GameCellProfile(r, c);
-                }
+                BoardMembers.Add(new GameBoardRow(r, GridColumns));
             }
 
 
-
+            //Adds a number of mines in random positions based on the "NumberMines" Game class property. Known bug - Currently can produce redundancy in mine locations.
             for (int i = 0; i < NumberMines; i++)
             {
                 Random rnd = new Random();
@@ -191,121 +75,42 @@ namespace Minesweeper
                 int c = rnd.Next(0, GridColumns);
 
 
-                BoardMembers[r, c].Text = "*";
-                BoardMembers[r, c].IsMine = true;
-                *//*                while (true)
-                                {
-                                    if (BoardMembers[r, c] == null)
-                                    {
-                                        BoardMembers[r, c] = "*";
-                                        break;
-                                    }
-                                }*//*
+                BoardMembers[r].GameCells[c].Text = "*";
+                BoardMembers[r].GameCells[c].IsMine = true;
+
 
 
 
             }
 
-            for (int r = 0; r < BoardMembers.GetLength(0); r++)
+            //Calculates the number of adjacent mines for each non-mine cell, and then replaces the text in the cell with that number when it is greater than 0.
+            foreach(GameBoardRow row in BoardMembers)
             {
-                for (int c = 0; c < BoardMembers.GetLength(1); c++)
+                foreach (GameCellProfile cell in row.GameCells)
                 {
-
-                    if (BoardMembers[r, c].IsMine == true)
+                    if (cell.IsMine == true)
                     {
                         continue;
                     }
                     else
                     {
-
-                        try
+                        List<int[]> nearbyCells = getNearbyCoords(cell.cellColumn, cell.cellRow, GridColumns-1, GridRows-1);
+                        foreach (int[] nearbyCell in nearbyCells)
                         {
-                            if (BoardMembers[r + 1, c].IsMine == true)
+                            if (BoardMembers[nearbyCell[1]].GameCells[nearbyCell[0]].IsMine == true)
                             {
-                                BoardMembers[r, c].MineCount++;
+                                cell.MineCount++;
                             }
                         }
-                        catch (Exception) { }
 
-
-                        try
+                        if(cell.MineCount > 0)
                         {
-                            if (BoardMembers[r + 1, c + 1].IsMine == true)
-                            {
-                                BoardMembers[r, c].MineCount++;
-                            }
-                        }
-                        catch (Exception) { }
-
-
-                        try
-                        {
-                            if (BoardMembers[r, c + 1].IsMine == true)
-                            {
-                                BoardMembers[r, c].MineCount++;
-                            }
-                        }
-                        catch (Exception) { }
-
-                        try
-                        {
-                            if (BoardMembers[r - 1, c + 1].IsMine == true)
-                            {
-                                BoardMembers[r, c].MineCount++;
-                            }
-                        }
-                        catch (Exception) { }
-
-                        try
-                        {
-                            if (BoardMembers[r - 1, c].IsMine == true)
-                            {
-                                BoardMembers[r, c].MineCount++;
-                            }
-                        }
-                        catch (Exception) { }
-
-                        try
-                        {
-                            if (BoardMembers[r - 1, c - 1].IsMine == true)
-                            {
-                                BoardMembers[r, c].MineCount++;
-                            }
-                        }
-                        catch (Exception) { }
-
-                        try
-                        {
-                            if (BoardMembers[r, c - 1].IsMine == true)
-                            {
-                                BoardMembers[r, c].MineCount++;
-                            }
-                        }
-                        catch (Exception) { }
-
-                        try
-                        {
-                            if (BoardMembers[r + 1, c - 1].IsMine == true)
-                            {
-                                BoardMembers[r, c].MineCount++;
-                            }
-                        }
-                        catch (Exception) { }
-
-                        if (BoardMembers[r, c].MineCount == 0)
-                        {
-                            continue;
-                        }
-                        else
-
-                        {
-                            BoardMembers[r, c].Text = BoardMembers[r, c].MineCount.ToString();
-                        }
+                            cell.Text = cell.MineCount.ToString();
+                        }                        
                     }
+
                 }
             }
-        }*/
-
-
+        }
     }
 }

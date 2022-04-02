@@ -28,6 +28,7 @@ namespace Minesweeper
         {
             get { return $"{cellRow.ToString()}_{cellColumn.ToString()}"; }
         }
+               
         public GameCell(int row, int column, string text, bool isMine)
         {
 
@@ -38,6 +39,7 @@ namespace Minesweeper
             this.IsMine = isMine;
 
         }
+
 
      
     }

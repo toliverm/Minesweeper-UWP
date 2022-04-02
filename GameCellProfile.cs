@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Minesweeper
 {
+    //Class used to pupulate GameBoardRow lists, and provide data binding targets for each gmae cell.
     public class GameCellProfile
     {
         public bool IsMine { get; set; }
