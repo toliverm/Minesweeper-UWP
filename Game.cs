@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using Windows.UI.Xaml;
+using System.Diagnostics;
 
 namespace Minesweeper
 {
@@ -11,59 +13,37 @@ namespace Minesweeper
     {
         private readonly int defaultGridRows = 9;
         private readonly int defaultGridColumns = 9;
-        private readonly int defaultNumberMines = 5;
+        private readonly int defaultNumberMines = 8;
 
         public int GridRows { get; set; }
         public int GridColumns { get; set; }
         public int NumberMines { get; set; }
         public BindingList<GameBoardRow> BoardMembers { get; set; }
 
-        public Game()
+        public Game(GameViewModel viewModel)
         {
             this.GridRows = defaultGridRows;
             this.GridColumns = defaultGridColumns;
             this.NumberMines = defaultNumberMines;
-            this.InitializeGameBoard();
+            this.InitializeGameBoard(viewModel);
             
         }
 
-        public Game(int gridRows, int gridColumns, int numberMines)
+        public Game(int gridRows, int gridColumns, int numberMines, GameViewModel viewModel)
         {
             this.GridRows = gridRows;
             this.GridColumns = gridColumns;
             this.NumberMines = numberMines;
-            this.InitializeGameBoard();
+            this.InitializeGameBoard(viewModel);
         }
 
-
-
-
-        // Returns list of int[2]{x,y} co-ordinates for each surrounding cell of position x,y that falls within the grid boundaries of xMax, yMax. Co-ordinates begin at 0,0.
-        internal List<int[]> getNearbyCoords(int x, int y, int xMax, int yMax)
+        public void InitializeGameBoard(GameViewModel viewModel)
         {
-            List<int[]> coords = new List<int[]>();
-
-            for (int i = x - 1; i <= x + 1; i++)
-            {
-                for (int j = y - 1; j <= y + 1; j++)
-                {
-                    if ((i >= 0 && i <= xMax) && (j >= 0 && j <= yMax) && !(i == x && j == y))
-                    {
-                        coords.Add(new int[] { i, j });
-                    }
-                }
-            }
-
-            return coords;
-        }
-
-        public void InitializeGameBoard()
-        {
-            BoardMembers = new BindingList<GameBoardRow>();
+            viewModel.BoardMembers = new BindingList<GameBoardRow>();
 
             for (int r = 0; r < GridRows; r++)
             {
-                BoardMembers.Add(new GameBoardRow(r, GridColumns));
+                viewModel.BoardMembers.Add(new GameBoardRow(r, GridColumns, viewModel));
             }
 
 
@@ -75,16 +55,12 @@ namespace Minesweeper
                 int c = rnd.Next(0, GridColumns);
 
 
-                BoardMembers[r].GameCells[c].Text = "*";
-                BoardMembers[r].GameCells[c].IsMine = true;
-
-
-
-
+                viewModel.BoardMembers[r].GameCells[c].Text = "*";
+                viewModel.BoardMembers[r].GameCells[c].IsMine = true;
             }
 
             //Calculates the number of adjacent mines for each non-mine cell, and then replaces the text in the cell with that number when it is greater than 0.
-            foreach(GameBoardRow row in BoardMembers)
+            foreach(GameBoardRow row in viewModel.BoardMembers)
             {
                 foreach (GameCellProfile cell in row.GameCells)
                 {
@@ -94,10 +70,10 @@ namespace Minesweeper
                     }
                     else
                     {
-                        List<int[]> nearbyCells = getNearbyCoords(cell.cellColumn, cell.cellRow, GridColumns-1, GridRows-1);
+                        List<int[]> nearbyCells = getNearbyCoords(cell.CellColumn, cell.CellRow, GridColumns-1, GridRows-1);
                         foreach (int[] nearbyCell in nearbyCells)
                         {
-                            if (BoardMembers[nearbyCell[1]].GameCells[nearbyCell[0]].IsMine == true)
+                            if (viewModel.BoardMembers[nearbyCell[1]].GameCells[nearbyCell[0]].IsMine == true)
                             {
                                 cell.MineCount++;
                             }
@@ -108,9 +84,83 @@ namespace Minesweeper
                             cell.Text = cell.MineCount.ToString();
                         }                        
                     }
+                }
+            }
+        }
+        public void CollapseCells(GameViewModel viewModel, int row, int column)
+        {
+            GameCellProfile baseCell = viewModel.BoardMembers[row].GameCells[column];
+
+            if(baseCell.IsMine == true)
+            {
+                baseCell.ButtonVisible = Visibility.Collapsed;
+                viewModel.TriggerLoss();
+            }
+            else if (baseCell.MineCount > 0)
+            {
+                baseCell.ButtonVisible = Visibility.Collapsed;
+            }
+            else
+            {
+                baseCell.ButtonVisible = Visibility.Collapsed;
+                List<int[]> newIteration = new List<int[]>
+                {
+                    new int[] { row, column },
+                };
+                
+                while (newIteration.Any())
+                {
+                    List<int[]> thisIteration = new List<int[]>(newIteration);
+                    newIteration.Clear();
+
+                    foreach (int[] coords in thisIteration)
+                    {
+                        List<int[]> nearbyCells = getNearbyCoords(coords[0], coords[1], GridRows - 1, GridColumns - 1);
+
+                        foreach (int[] nearbyCell in nearbyCells)
+                        {
+                            GameCellProfile cell = viewModel.BoardMembers[nearbyCell[0]].GameCells[nearbyCell[1]];
+                            if (cell.ButtonVisible == Visibility.Collapsed)
+                            {
+                                continue;
+                            }
+                            else if(cell.IsMine == true)
+                            {
+                                continue;
+                            }
+                            else if (cell.MineCount == 0)
+                            {
+                                cell.ButtonVisible = Visibility.Collapsed;
+                                newIteration.Add(nearbyCell);
+                            }
+                            else
+                            {
+                                cell.ButtonVisible = Visibility.Collapsed;
+                            }
+                        }
+                    }
 
                 }
             }
+        }
+
+        // Returns list of int[2]{x,y} co-ordinates for each surrounding cell of position x,y that falls within the grid boundaries of xMax, yMax. Co-ordinates begin at 0,0.
+        internal List<int[]> getNearbyCoords(int row, int column, int rowMax, int colMax)
+        {
+            List<int[]> coords = new List<int[]>();
+
+            for (int i = row - 1; i <= row + 1; i++)
+            {
+                for (int j = column - 1; j <= column + 1; j++)
+                {
+                    if ((i >= 0 && i <= rowMax) && (j >= 0 && j <= colMax) && !(i == row && j == column))
+                    {
+                        coords.Add(new int[] { i, j });
+                    }
+                }
+            }
+
+            return coords;
         }
     }
 }

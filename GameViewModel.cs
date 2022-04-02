@@ -4,78 +4,116 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Microsoft.Toolkit.Mvvm.Input;
+using System.Diagnostics;
 
 namespace Minesweeper
 {
-    internal class GameViewModel
+    internal class GameViewModel : INotifyPropertyChanged
+
     {
-        private int defaultGridRows = 9;
-        private int defaultGridColumns = 9;
-        private int defaultNumberMines = 5;
+        //Private variables
+        private int gridRows;
+        private int gridColumns;
+        private int numberMines;
+        private BindingList<GameBoardRow> boardMembers;
+        private Game game;
+        
 
-        public int GridRows { get; set; }
-        public int GridColumns { get; set; }
-        public int NumberMines { get; set; }
-        public BindingList<GameBoardRow> BoardMembers { get; set; }
-
+        //Constructors
         public GameViewModel()
         {
-            this.GridRows = defaultGridRows;
-            this.GridColumns = defaultGridColumns;
-            this.NumberMines = defaultNumberMines;
+            GridRows = 9;
+            GridColumns = 9;
+            NumberMines = 8;
+            game = new Game(GridRows, GridColumns, NumberMines, this);
+/*            BoardMembers = game.BoardMembers;*/
+            ClickRefresh = new RelayCommand(Refresh);
         }
 
-        public void Draw(Game game, Grid grid)
+        //Variable setters and binding targets
+        
+
+        public int GridRows 
         {
-            PlayGrid playGrid = new PlayGrid(game.GridRows, game.GridColumns);
-            /*            playGrid.playGrid.Children.Add(game.BoardMembers)*/
-            playGrid.AddCells(playGrid.playGrid, game.BoardMembers);
-            grid.Children.Clear();
-            grid.Children.Add(playGrid.playGrid);
+            get { return gridRows; }
+            set
+            {
+                gridRows = value;
+                OnPropertyChanged();
+            }
+        }
+        public int GridColumns
+        {
+            get { return gridColumns; }
+            set
+            {
+                gridColumns = value;
+                OnPropertyChanged();
+            }
         }
 
-        public class PlayGrid
+        public int NumberMines
         {
-            public Grid playGrid;
-
-            public PlayGrid(int rows, int cols)
+            get { return numberMines; }
+            set
             {
-                playGrid = new Grid();
-                playGrid.Width = cols * 23;
-                playGrid.Height = rows * 23;
-
-                for (int i = 0; i < rows; i++)
-                {
-                    var myRowDefinition = new RowDefinition();
-                    myRowDefinition.Height = new GridLength(22);
-                    playGrid.RowDefinitions.Add(myRowDefinition);
-
-                }
-
-                for (int j = 0; j < cols; j++)
-                {
-                    var myColumnDefinition = new ColumnDefinition();
-                    myColumnDefinition.Width = new GridLength(22);
-                    playGrid.ColumnDefinitions.Add(myColumnDefinition);
-                }
+                numberMines = value;
+                OnPropertyChanged();
             }
+        }
 
-            public void AddCells(Grid grid, BindingList<GameBoardRow> gameBoard)
+        public BindingList<GameBoardRow> BoardMembers
+        {
+            get { return boardMembers; }
+            set
             {
-                foreach (GameBoardRow row in gameBoard)
-                {
-                    foreach (GameCellProfile cell in row.GameCells)
-                    {
-                        GameCell thisCell = new GameCell(cell.cellRow, cell.cellColumn, cell.Text, cell.IsMine);
-                        thisCell.SetValue(Grid.RowProperty, cell.cellRow);
-                        thisCell.SetValue(Grid.ColumnProperty, cell.cellColumn);
-                        grid.Children.Add(thisCell);
-                    }
-                }
+                boardMembers = value;
+                OnPropertyChanged();
             }
+        }
+
+        //Click Event Handler Methods
+
+        public RelayCommand ClickRefresh { get; }
+        public void Refresh()
+        {
+            game = new Game(gridRows, gridColumns, numberMines, this);
+            Debug.WriteLine($"Created new game with {gridRows} rows, {gridColumns} columns, and {numberMines} mines");
+/*            BoardMembers = game.BoardMembers;*/
+        }
+
+
+
+        public void CellClickHandler(int row, int column)
+        {
+            /*            BoardMembers[row].GameCells[column].ButtonVisible = Visibility.Collapsed;*/
+            Debug.Print($"You clicked a cell at co-ordinates x:{column} y:{row}");
+            game.CollapseCells(this, row, column);
+        }
+
+        public void TriggerLoss()
+        {
+            Debug.WriteLine("You Lose!");
+            ContentDialog dialog = new ContentDialog();
+            dialog.Title = "You Lose!";
+            dialog.CloseButtonText = "Close";
+            dialog.DefaultButton = ContentDialogButton.Close;
+
+/*            var result = await dialog.ShowAsync();*/
+
+        }
+
+        //INotifyPropertyChange handlers
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
     }
 }
