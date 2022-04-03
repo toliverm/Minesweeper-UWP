@@ -6,42 +6,112 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Height="500" Width="500">
-
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Height="500" Width="600">
+    <Page.DataContext>
+        <local:GameViewModel x:Name="ViewModel"/>
+    </Page.DataContext>
     <Page.Resources>
-        <Style TargetType="Border" x:Key="CellBorder">
-            <Setter Property="Width" Value="20" />
-            <Setter Property="Height" Value="20" />
-            <Setter Property="HorizontalAlignment" Value="Left" />
-            <Setter Property="VerticalAlignment" Value="Top" />
+        <Style TargetType="Border" x:Key="CounterPanel">
+            <Setter Property="Width" Value="50" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="Background" Value="DarkGray" />
             <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="Margin" Value="1" />
+            <Setter Property="Padding" Value="8, 2" />
         </Style>
-        <Style TargetType="TextBlock" x:Key="CellText">
-            <Setter Property="FontSize" Value="15" />
+        <Style TargetType="TextBlock" x:Key="CounterText">
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="SymbolIcon" x:Key="CounterPanelSymbol">
+            <Setter Property="Margin" Value="10, 0" />
             <Setter Property="HorizontalAlignment" Value="Center" />
-            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
     </Page.Resources>
 
     <Grid Padding="10" x:Name="grid1">
         <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
             <RowDefinition/>
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
-        <Grid x:Name="gameContext" Grid.Row="0"/>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
-            <TextBlock Text="Rows:" VerticalAlignment="Center"/>
-            <TextBox  Width="50" Margin="2, 0, 20, 0" Name="inputRows" Text="{Binding GridRows, Mode=TwoWay}"/>
-            <TextBlock Text="Columns:" VerticalAlignment="Center"/>
-            <TextBox  Width="50" Margin="2, 0, 20, 0" Name="inputCols" Text="{Binding GridColumns, Mode=TwoWay}"/>
-            <TextBlock Text="Mines:" VerticalAlignment="Center"/>
-            <TextBox  Width="50" Margin="2, 0, 20, 0" Name="inputMines" Text="{Binding NumberMines, Mode=TwoWay}"/>
-            <Button HorizontalAlignment="Center" Content="Refresh" x:Name="btnRefresh" Click="btnRefresh_Click"/>
+
+        <Grid Name="gameCounters" Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.5*"/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="0.5*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                <SymbolIcon Symbol="Target" Style="{StaticResource CounterPanelSymbol}" />
+                <TextBox Name="Score" IsReadOnly="True" Text="{Binding EmptyCellCount}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center">
+                <SymbolIcon Symbol="Flag" Style="{StaticResource CounterPanelSymbol}" />
+                <TextBox Name="FlagCount" Text="{Binding FlagCount}"/>
+            </StackPanel>
+            <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Center">
+                <SymbolIcon Symbol="Clock" Style="{StaticResource CounterPanelSymbol}" />
+                <TextBox Name="Timer" IsReadOnly="True" Text="{Binding TimerCount}"/>
+            </StackPanel>
+        </Grid>
+
+        <Grid Name="gameContext" Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding Path=BoardMembers}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border>
+                            <ItemsControl ItemsSource="{Binding Path=GameCells}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <local:GameCell/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+        </Grid>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
+            <ToggleButton IsChecked="{Binding FlagToggle, Mode=TwoWay}" Padding="3" Margin="5, 0">
+                <SymbolIcon Symbol="Flag" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </ToggleButton>
+            <Button HorizontalAlignment="Center" Content="Refresh" x:Name="BtnRefresh" Command="{Binding ClickRefresh}"/>
+            <Button HorizontalAlignment="Center" x:Name="SettingsFlyout" Padding="3" Margin="2,0">
+                <SymbolIcon Symbol="Setting"/>
+                <Button.Flyout>
+                    <Flyout>
+                        <StackPanel>
+                            <TextBlock Text="Rows:" VerticalAlignment="Center"/>
+                            <TextBox  Width="50" Margin="2, 0, 20, 0" Name="inputRows" Text="{Binding GridRows, Mode=TwoWay}"/>
+                            <TextBlock Text="Columns:" VerticalAlignment="Center"/>
+                            <TextBox  Width="50" Margin="2, 0, 20, 0" Name="inputCols" Text="{Binding GridColumns, Mode=TwoWay}"/>
+                            <TextBlock Text="Mines:" VerticalAlignment="Center"/>
+                            <TextBox  Width="50" Margin="2, 0, 20, 0" Name="inputMines" Text="{Binding NumberMines, Mode=TwoWay}"/>
+                        </StackPanel>
+                    </Flyout>
+                </Button.Flyout>
+            </Button>
         </StackPanel>
-        
-
-
 
     </Grid>
 </Page>
