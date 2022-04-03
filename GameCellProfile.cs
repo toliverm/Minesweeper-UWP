@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Toolkit.Mvvm.Input;
-using System.Diagnostics;
 using Windows.UI.Xaml;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -14,23 +13,29 @@ namespace Minesweeper
     //Class used to populate GameBoardRow lists, and provide data binding targets for each gmae cell.
     internal class GameCellProfile : INotifyPropertyChanged
     {
-        private Visibility buttonVisible;
+        private Visibility buttonVisible = Visibility.Visible;
+        private bool flagged = false;
+        private Visibility flagVisible = Visibility.Collapsed;
+        public string text = "";
+
         public bool IsMine { get; set; }
-        public string Text { get; set; }
         public int CellRow { get; set; }
         public int CellColumn { get; set; }
         public int MineCount { get; set; }
+        
 
         private GameViewModel ViewModel { get; set; }
 
-        public RelayCommand<GameCell> CellClicked { get; private set; }
+        public RelayCommand CellClicked { get; }
+        public RelayCommand FlagTap { get; }
 
         public GameCellProfile()
         {
             this.Text = "";
             this.IsMine = false;
-            this.ButtonVisible = Visibility.Visible;
-            CellClicked = new RelayCommand<GameCell>(OnCellClicked);
+            CellClicked = new RelayCommand(OnCellClicked);
+            FlagTap = new RelayCommand(TriggerFlagTap);
+
         }
 
         public GameCellProfile(int row, int column)
@@ -39,8 +44,8 @@ namespace Minesweeper
             this.IsMine = false;
             this.CellRow = row;
             this.CellColumn = column;
-            this.ButtonVisible = Visibility.Visible;
-            CellClicked = new RelayCommand<GameCell>(OnCellClicked);
+            CellClicked = new RelayCommand(OnCellClicked);
+            FlagTap = new RelayCommand(TriggerFlagTap);
         }
 
         public GameCellProfile(int row, int column, GameViewModel viewModel)
@@ -49,9 +54,9 @@ namespace Minesweeper
             this.IsMine = false;
             this.CellRow = row;
             this.CellColumn = column;
-            this.ButtonVisible = Visibility.Visible;
             this.ViewModel = viewModel;
-            CellClicked = new RelayCommand<GameCell>(OnCellClicked);
+            CellClicked = new RelayCommand(OnCellClicked);
+            FlagTap = new RelayCommand(TriggerFlagTap);
         }
         public Visibility ButtonVisible
         {
@@ -62,11 +67,46 @@ namespace Minesweeper
                 OnPropertyChanged();
             }
         }
-        private void OnCellClicked(GameCell gamecell)
+
+        public bool Flagged
         {
-            /*BoardMembers[gamecell.CellRow].GameCells[gamecell.CellColumn].ButtonVisible = false;*/
-            ViewModel.CellClickHandler(CellRow,CellColumn);
-/*            this.ButtonVisible= Visibility.Collapsed;*/
+            get { return flagged; }
+            set
+            {
+                flagged = value;
+                OnPropertyChanged();
+                if (value) { FlagVisible = Visibility.Visible; } else { FlagVisible = Visibility.Collapsed; }
+            }
+        }
+
+        public string Text
+        {
+            get { return text; }
+            set
+            {
+                text = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public Visibility FlagVisible
+        {
+            get { return flagVisible; }
+            set
+            {
+                flagVisible = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private void OnCellClicked()
+        {
+            ViewModel.CellClickHandler(this);
+        }
+
+        private void TriggerFlagTap()
+        {
+            ViewModel.FlagTapHandler(this);
         }
 
         public string Name

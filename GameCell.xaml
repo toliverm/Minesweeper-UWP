@@ -7,14 +7,14 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="22"
-    d:DesignWidth="22"
+    d:DesignHeight="32"
+    d:DesignWidth="32"
     >
     
     <UserControl.Resources>
         <Style TargetType="Border" x:Key="CellBorder">
-            <Setter Property="Width" Value="20" />
-            <Setter Property="Height" Value="20" />
+            <Setter Property="Width" Value="30" />
+            <Setter Property="Height" Value="30" />
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="VerticalAlignment" Value="Top" />
             <Setter Property="Background" Value="DarkGray" />
@@ -22,20 +22,45 @@
             <Setter Property="Margin" Value="1" />
         </Style>
         <Style TargetType="TextBlock" x:Key="CellText">
-            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontSize" Value="20" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Top" />
         </Style>
+        <Style TargetType="Button" x:Key="CellButton1">
+            <Setter Property="Background" Value="AliceBlue" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Width" Value="30" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="BorderThickness" Value="1" />
+            
+        </Style>
+
     </UserControl.Resources>
 
     <Grid>
         <Border Style="{StaticResource CellBorder}">
             <Grid>
-                <Grid Canvas.ZIndex="2" Visibility="{Binding ElementName=GameCellElement, Path=ButtonVisible}">
-                    <Button Background="AliceBlue" Height="20" Width="20" HorizontalAlignment="Center" VerticalAlignment="Center" BorderThickness="1"  Command="{Binding CellClicked}" CommandParameter="{Binding ElementName=GameCellElement}"/>
+                <Grid Canvas.ZIndex="3" Visibility="{Binding FlagVisible}">
+                    <Button x:Name="flagButton"
+                            Style="{StaticResource CellButton1}"
+                            Background="SlateGray"
+                            Content="&#x2691;"
+                            FontSize="20"
+                            Padding="0"
+                            Command="{Binding CellClicked}" 
+                            />
+                    
+                </Grid>
+                <Grid Canvas.ZIndex="2" Visibility="{Binding ButtonVisible}" >
+
+                    <Button x:Name="cellButton"
+                            Style="{StaticResource CellButton1}"
+                            Command="{Binding CellClicked}" 
+                            />
                 </Grid>
                 <Grid Canvas.ZIndex="0">
-                    <TextBlock Canvas.ZIndex="0" Style="{StaticResource CellText}" Name="cellContent" Text="{Binding ElementName=GameCellElement, Path=CellContent}"/>
+                    <TextBlock Canvas.ZIndex="0" Style="{StaticResource CellText}" Name="cellContent" Text="{Binding Text}"/>
                 </Grid>                               
             </Grid>                        
         </Border>

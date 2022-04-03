@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using System.Diagnostics;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -23,10 +24,10 @@ namespace Minesweeper
         public GameCell()
         {
             this.InitializeComponent();
-            this.IsMine = false;
-            this.CellContent = "";
+/*            this.IsMine = false;
+            this.CellContent = "";*/
         }
-
+/*
         public GameCell(int row, int column, string text, bool isMine)
         {
 
@@ -40,12 +41,13 @@ namespace Minesweeper
 
         public static DependencyProperty CellContentProperty = DependencyProperty.Register("CellContent", typeof(string), typeof(GameCell), new PropertyMetadata(""));
 
-        public string CellContent {
-            get 
+        public string CellContent
+        {
+            get
             {
-                return (string)GetValue(CellContentProperty); 
+                return (string)GetValue(CellContentProperty);
             }
-            set 
+            set
             {
                 SetValue(CellContentProperty, value);
             }
@@ -96,5 +98,11 @@ namespace Minesweeper
         {
             get { return $"{CellRow.ToString()}_{CellColumn.ToString()}"; }
         }
+
+        private void Button_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            Debug.WriteLine("Button Right Tapped");
+
+        }*/
     }
 }

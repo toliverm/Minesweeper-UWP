@@ -6,35 +6,82 @@ using System.Threading.Tasks;
 using System.ComponentModel;
 using Windows.UI.Xaml;
 using System.Diagnostics;
+using System.Threading;
 
 namespace Minesweeper
 {
     internal class Game
     {
+        private GameViewModel viewModel;
+        
         private readonly int defaultGridRows = 9;
         private readonly int defaultGridColumns = 9;
         private readonly int defaultNumberMines = 8;
+        private readonly int defaultTimer = 90;
+        private List<int[]> emptyCells = new List<int[]>();
+        private int emptyCellsCount = 0;
+        private CancellationTokenSource cts;
 
         public int GridRows { get; set; }
         public int GridColumns { get; set; }
         public int NumberMines { get; set; }
         public BindingList<GameBoardRow> BoardMembers { get; set; }
 
+
+        public List<int[]> EmptyCells
+        {
+            get { return emptyCells; }
+            set
+            {
+                emptyCells = value;
+                EmptyCellsCount = value.Count();
+
+                foreach (int[] row in value)
+                {
+                    Debug.WriteLine(string.Join(", ", row)+"; ");
+                }
+            }
+        }
+
+
+        public int EmptyCellsCount
+        {
+            get { return emptyCellsCount; }
+            set
+            {
+                emptyCellsCount = value;
+                viewModel.EmptyCellCount = value;
+                Debug.Print($"Empty Cells:{value}\n");
+            }
+        }
+
         public Game(GameViewModel viewModel)
         {
+            cts = new CancellationTokenSource();
             this.GridRows = defaultGridRows;
             this.GridColumns = defaultGridColumns;
             this.NumberMines = defaultNumberMines;
             this.InitializeGameBoard(viewModel);
+            this.InitialiseTimer(defaultTimer, viewModel, cts.Token);
             
         }
 
-        public Game(int gridRows, int gridColumns, int numberMines, GameViewModel viewModel)
+        public Game(int gridRows, int gridColumns, int numberMines, int timerSetting, GameViewModel viewModel)
         {
+            cts = new CancellationTokenSource();
             this.GridRows = gridRows;
             this.GridColumns = gridColumns;
             this.NumberMines = numberMines;
-            this.InitializeGameBoard(viewModel);
+            this.viewModel = viewModel;
+            this.InitializeGameBoard(this.viewModel);
+            this.InitialiseTimer(timerSetting, viewModel, cts.Token);
+        }
+
+        public void Cancel()
+        {
+            cts.Cancel();
+
+            cts.Dispose();
         }
 
         public void InitializeGameBoard(GameViewModel viewModel)
@@ -55,9 +102,10 @@ namespace Minesweeper
                 int c = rnd.Next(0, GridColumns);
 
 
-                viewModel.BoardMembers[r].GameCells[c].Text = "*";
+                viewModel.BoardMembers[r].GameCells[c].Text = "\U0001F4A3";
                 viewModel.BoardMembers[r].GameCells[c].IsMine = true;
             }
+            viewModel.FlagCount = NumberMines;
 
             //Calculates the number of adjacent mines for each non-mine cell, and then replaces the text in the cell with that number when it is greater than 0.
             foreach(GameBoardRow row in viewModel.BoardMembers)
@@ -70,6 +118,7 @@ namespace Minesweeper
                     }
                     else
                     {
+                        EmptyCellsCount++;
                         List<int[]> nearbyCells = getNearbyCoords(cell.CellColumn, cell.CellRow, GridColumns-1, GridRows-1);
                         foreach (int[] nearbyCell in nearbyCells)
                         {
@@ -99,10 +148,13 @@ namespace Minesweeper
             else if (baseCell.MineCount > 0)
             {
                 baseCell.ButtonVisible = Visibility.Collapsed;
+                EmptyCellsCount--;
             }
             else
             {
                 baseCell.ButtonVisible = Visibility.Collapsed;
+                EmptyCellsCount--;
+
                 List<int[]> newIteration = new List<int[]>
                 {
                     new int[] { row, column },
@@ -131,16 +183,51 @@ namespace Minesweeper
                             else if (cell.MineCount == 0)
                             {
                                 cell.ButtonVisible = Visibility.Collapsed;
+                                EmptyCellsCount--;
                                 newIteration.Add(nearbyCell);
                             }
                             else
                             {
                                 cell.ButtonVisible = Visibility.Collapsed;
+                                EmptyCellsCount--;
                             }
                         }
                     }
-
                 }
+            }
+
+            if(EmptyCellsCount == 0) { viewModel.TriggerWin(); }
+
+        }
+
+        public void FlagTriggerHandler(int row, int column, bool isFlagged)
+        {
+            if (viewModel.FlagCount > 0)
+            {
+                if (!isFlagged)
+                {
+                    viewModel.BoardMembers[row].GameCells[column].Flagged = true;
+                    viewModel.FlagCount--;
+                }
+                else
+                {
+                    viewModel.BoardMembers[row].GameCells[column].Flagged = false;
+                    viewModel.FlagCount++;
+                }
+            }
+        }
+
+        private async void InitialiseTimer(int timerSetting, GameViewModel viewModel, CancellationToken token)
+        {
+            int timerCount = timerSetting;
+            viewModel.TimerCount = timerCount;
+
+            while (timerCount > 0)
+            {
+                await Task.Delay(1000);
+                if (token.IsCancellationRequested) { break; }
+                timerCount--;
+                viewModel.TimerCount = timerCount;
             }
         }
 
@@ -162,5 +249,6 @@ namespace Minesweeper
 
             return coords;
         }
+        
     }
 }
