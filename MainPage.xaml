@@ -6,7 +6,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Height="500" Width="600">
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    muxc:BackdropMaterial.ApplyToRootOrPageBackground="True">
     <Page.DataContext>
         <local:GameViewModel x:Name="ViewModel"/>
     </Page.DataContext>
@@ -35,11 +36,12 @@
 
     <Grid Padding="10" x:Name="grid1">
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
-            <RowDefinition/>
-            <RowDefinition Height="30"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
-
+        
+        <!--Top Panel UI-->
         <Grid Name="gameCounters" Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="0.5*"/>
@@ -48,7 +50,6 @@
                 <ColumnDefinition/>
                 <ColumnDefinition Width="0.5*"/>
             </Grid.ColumnDefinitions>
-
             <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
                 <SymbolIcon Symbol="Target" Style="{StaticResource CounterPanelSymbol}" />
                 <TextBox Name="Score" IsReadOnly="True" Text="{Binding EmptyCellCount}"/>
@@ -62,8 +63,9 @@
                 <TextBox Name="Timer" IsReadOnly="True" Text="{Binding TimerCount}"/>
             </StackPanel>
         </Grid>
-
-        <Grid Name="gameContext" Grid.Row="1">
+        
+        <!--Game Context UI-->
+        <Border Name="gameContext" Grid.Row="1" Margin="5, 10">
             <ItemsControl ItemsSource="{Binding Path=BoardMembers}" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -89,25 +91,56 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-
-        </Grid>
+        </Border>
+        
+        <!--Bottom Panel UI-->
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center">
-            <ToggleButton IsChecked="{Binding FlagToggle, Mode=TwoWay}" Padding="3" Margin="5, 0">
+            <ToggleButton IsChecked="{Binding FlagToggle, Mode=TwoWay}" Padding="3" Margin="5, 0" Height="30" Width="30">
                 <SymbolIcon Symbol="Flag" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </ToggleButton>
-            <Button HorizontalAlignment="Center" Content="Refresh" x:Name="BtnRefresh" Command="{Binding ClickRefresh}"/>
-            <Button HorizontalAlignment="Center" x:Name="SettingsFlyout" Padding="3" Margin="2,0">
+            <Button HorizontalAlignment="Center" Content="New Game" x:Name="BtnRefresh" Command="{Binding ClickRefresh}" Height="30"/>
+            <Button HorizontalAlignment="Center" x:Name="SettingsFlyout" Padding="3" Margin="5,0" Height="30" Width="30">
                 <SymbolIcon Symbol="Setting"/>
                 <Button.Flyout>
+                    
+                    <!--Settings Flyout UI-->
                     <Flyout>
-                        <StackPanel>
-                            <TextBlock Text="Rows:" VerticalAlignment="Center"/>
-                            <TextBox  Width="50" Margin="2, 0, 20, 0" Name="inputRows" Text="{Binding GridRows, Mode=TwoWay}"/>
-                            <TextBlock Text="Columns:" VerticalAlignment="Center"/>
-                            <TextBox  Width="50" Margin="2, 0, 20, 0" Name="inputCols" Text="{Binding GridColumns, Mode=TwoWay}"/>
-                            <TextBlock Text="Mines:" VerticalAlignment="Center"/>
-                            <TextBox  Width="50" Margin="2, 0, 20, 0" Name="inputMines" Text="{Binding NumberMines, Mode=TwoWay}"/>
-                        </StackPanel>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Orientation="Horizontal" Grid.Row="0">
+                                <StackPanel>
+                                    <TextBlock Text="Rows:" VerticalAlignment="Center"/>
+                                    <Slider Width="200" Minimum="5" Maximum="40" Value="{Binding GridRows, Mode=TwoWay}" />
+                                </StackPanel>
+                                <TextBox  Width="50" Margin="20, 0, 20, 0" Name="inputRows" Height="20" Text="{Binding GridRows, Mode=TwoWay}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Grid.Row="1">
+                                <StackPanel>
+                                    <TextBlock Text="Columns:" VerticalAlignment="Center"/>
+                                    <Slider Width="200" Minimum="5" Maximum="40" Value="{Binding GridColumns, Mode=TwoWay}" />
+                                </StackPanel>
+                                <TextBox  Width="50" Margin="20, 0, 20, 0" Name="inputCols" Height="20" Text="{Binding GridColumns, Mode=TwoWay}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Grid.Row="2">
+                                <StackPanel>
+                                    <TextBlock Text="Mines:" VerticalAlignment="Center"/>
+                                    <Slider Width="200" Minimum="5" Maximum="40" Value="{Binding NumberMines, Mode=TwoWay}" />
+                                </StackPanel>
+                                <TextBox  Width="50" Margin="20, 0, 20, 0" Name="inputMines" Height="20" Text="{Binding NumberMines, Mode=TwoWay}"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Grid.Row="3">
+                                <StackPanel>
+                                    <TextBlock Text="Time:" VerticalAlignment="Center"/>
+                                    <Slider Width="200" Minimum="20" Maximum="300" StepFrequency="5" Value="{Binding TimerSetting, Mode=TwoWay}" />
+                                </StackPanel>
+                                <TextBox  Width="50" Margin="20, 0, 20, 0" Name="inputTimer" Height="20" Text="{Binding TimerSetting, Mode=TwoWay}"/>
+                            </StackPanel>                            
+                        </Grid> 
                     </Flyout>
                 </Button.Flyout>
             </Button>
