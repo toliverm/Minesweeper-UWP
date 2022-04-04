@@ -1,12 +1,4 @@
 ﻿using System;
-using System.Windows;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Windows.UI.Xaml;
-using System.Threading;
 using Windows.UI.Xaml.Controls;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -148,18 +140,15 @@ namespace Minesweeper
  
 
         public void CellClickHandler(GameCellProfile cell)
-        {
-            Debug.Print($"You clicked a cell at co-ordinates x:{cell.CellColumn} y:{cell.CellRow}\n");
-
+        { 
             if (!flagToggle)
             {
-                game.CollapseCells(this, cell.CellRow, cell.CellColumn);
-            } 
-            else
+                if (!cell.Flagged) { game.CollapseCells(this, cell.CellRow, cell.CellColumn); }
+            }
+            else 
             {
                 game.FlagTriggerHandler(cell.CellRow, cell.CellColumn, cell.Flagged);
             }
-            
         }
 
         public void FlagTapHandler(GameCellProfile cell)
@@ -192,7 +181,7 @@ namespace Minesweeper
                 Title = "You Lose!",
                 Content = "Click the button below to begin a new game",
                 CloseButtonText = "Try again",
-                /*CloseButtonCommand = */
+                CloseButtonCommand = ClickRefresh
             };
 
             await loseDialog.ShowAsync();
@@ -205,7 +194,7 @@ namespace Minesweeper
                 Title = "You Win!",
                 Content = $"Congratulations, you found all {mines.ToString()} mines in {time.ToString()} seconds!",
                 CloseButtonText = "Reset Game",
-                /*CloseButtonCommand = */
+                CloseButtonCommand = ClickRefresh
             };
 
             await loseDialog.ShowAsync();

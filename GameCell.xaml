@@ -9,60 +9,79 @@
     mc:Ignorable="d"
     d:DesignHeight="32"
     d:DesignWidth="32"
+    xmlns:Core="using:Microsoft.Xaml.Interactions.Core" 
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     >
-    
+
     <UserControl.Resources>
         <Style TargetType="Border" x:Key="CellBorder">
             <Setter Property="Width" Value="30" />
             <Setter Property="Height" Value="30" />
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="VerticalAlignment" Value="Top" />
-            <Setter Property="Background" Value="DarkGray" />
+            <Setter Property="Background" Value="{ThemeResource LayerFillColorDefaultBrush}" />
             <Setter Property="CornerRadius" Value="4" />
             <Setter Property="Margin" Value="1" />
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+
         </Style>
         <Style TargetType="TextBlock" x:Key="CellText">
             <Setter Property="FontSize" Value="20" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Top" />
         </Style>
-        <Style TargetType="Button" x:Key="CellButton1">
-            <Setter Property="Background" Value="AliceBlue" />
+        <Style TargetType="Button" x:Key="CellButton">
             <Setter Property="Height" Value="30" />
             <Setter Property="Width" Value="30" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="BorderThickness" Value="1" />
-            
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="CornerRadius" Value="6" />
         </Style>
+        <Style TargetType="Button" x:Key="FlagButton">
+            <Setter Property="Height" Value="30" />
+            <Setter Property="Width" Value="30" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Background" Value="{ThemeResource SystemAccentColor}" />
+            <Setter Property="Content" Value="&#x2691;" />
+        </Style>
+
 
     </UserControl.Resources>
 
     <Grid>
-        <Border Style="{StaticResource CellBorder}">
-            <Grid>
-                <Grid Canvas.ZIndex="3" Visibility="{Binding FlagVisible}">
-                    <Button x:Name="flagButton"
-                            Style="{StaticResource CellButton1}"
-                            Background="SlateGray"
-                            Content="&#x2691;"
-                            FontSize="20"
-                            Padding="0"
-                            Command="{Binding CellClicked}" 
-                            />
-                    
-                </Grid>
-                <Grid Canvas.ZIndex="2" Visibility="{Binding ButtonVisible}" >
-
-                    <Button x:Name="cellButton"
-                            Style="{StaticResource CellButton1}"
-                            Command="{Binding CellClicked}" 
-                            />
-                </Grid>
-                <Grid Canvas.ZIndex="0">
-                    <TextBlock Canvas.ZIndex="0" Style="{StaticResource CellText}" Name="cellContent" Text="{Binding Text}"/>
-                </Grid>                               
-            </Grid>                        
-        </Border>
+        <Interactivity:Interaction.Behaviors>
+            <Core:EventTriggerBehavior EventName="RightTapped">
+                <Core:InvokeCommandAction  Command="{Binding FlagTap}"/>
+            </Core:EventTriggerBehavior>
+        </Interactivity:Interaction.Behaviors>
+        <Grid Canvas.ZIndex="2" Visibility="{Binding ButtonVisible}"  >
+            <Border Style="{StaticResource CellBorder}" Background="{StaticResource SolidBackgroundFillColorTertiaryBrush}" CornerRadius="6">
+                <Button x:Name="cellButton"
+                            Style="{StaticResource CellButton}"
+                            Command="{Binding CellClicked}" >
+                    <Interactivity:Interaction.Behaviors>
+                        <Core:DataTriggerBehavior Binding="{Binding Flagged}" Value="True">
+                            <Core:ChangePropertyAction PropertyName="Style" Value="{StaticResource FlagButton}"/>
+                        </Core:DataTriggerBehavior>
+                        <Core:DataTriggerBehavior Binding="{Binding Flagged}" Value="False">
+                            <Core:ChangePropertyAction PropertyName="Style" Value="{StaticResource CellButton}"/>
+                        </Core:DataTriggerBehavior>
+                    </Interactivity:Interaction.Behaviors>
+                </Button>
+            </Border>
+        </Grid>
+        <Grid Canvas.ZIndex="0">
+            <Border Style="{StaticResource CellBorder}">
+                <TextBlock Canvas.ZIndex="0" Style="{StaticResource CellText}" Name="cellContent" Text="{Binding Text}"/>
+            </Border>
+        </Grid>
     </Grid>
 </UserControl>
